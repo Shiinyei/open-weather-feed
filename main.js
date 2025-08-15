@@ -2,7 +2,7 @@ function main() {
   browser.storage.local.get().then(value => {
     if(value.key){
       browser.browserAction.setPopup({
-        popup: browser.runtime.getURL("src/opf.html"),
+        popup: browser.runtime.getURL("src/owf.html"),
       });
     }
     else{

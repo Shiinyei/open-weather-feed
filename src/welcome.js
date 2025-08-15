@@ -8,7 +8,7 @@ function handleSubmit(event){
   
   return browser.storage.local.set({key: btoa(key)}).then((value) => {
     browser.browserAction.setPopup({
-      popup: browser.runtime.getURL("src/opf.html"),
+      popup: browser.runtime.getURL("src/owf.html"),
     });
     browser.runtime.reload();
     return;
