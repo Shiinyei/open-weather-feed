@@ -1,0 +1,21 @@
+body{
+  margin: 0 2px 2px;
+}
+
+main{
+  display: flex;
+  flex-direction: column;
+
+  .owf-topbar{
+    display: flex;
+
+    button{
+      border: 0;
+      padding: 6px 10px;
+    }
+  }
+}
+
+.hidden{
+  display: none;
+}
