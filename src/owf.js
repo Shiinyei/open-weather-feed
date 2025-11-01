@@ -42,6 +42,12 @@ inputElement.addEventListener('input', debounce((event) => {
     })
     .then((response) => {
       if(Array.isArray(response)){
+        if(response.length === 0){
+          const divElement = document.createElement('div');
+          divElement.innerHTML = 'No results found';
+          locationsFieldset.appendChild(divElement);
+        }
+
         response.forEach(location => {
           const divElement = document.createElement('div');
           const labelElement = document.createElement('label');
