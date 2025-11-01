@@ -1,6 +1,7 @@
 const formElement = document.getElementById('owf-form-new');
 const inputElement = document.getElementById('owf-input-new-location');
 const locationsFieldset = document.getElementById('owf-input-locations');
+const buttonElement = document.getElementById('owf-btn-submit-location');
 
 const OWM_GEO_ENDPOINT = 'https://api.openweathermap.org/geo/1.0/direct';
 
@@ -19,10 +20,13 @@ const debounce = (callback, wait) => {
 
 function resetLocationsFieldset(){
   locationsFieldset.classList.add('hidden');
+  buttonElement.classList.add('hidden');
   const existingChildren = locationsFieldset.getElementsByTagName('*');
   for(const child of existingChildren){
-    if(child.tagName !== 'legend')
+    if(child.tagName.toLowerCase() !== 'legend'){
+      console.log('CHILD',child.tagName);
       child.remove();
+    }
   }
 }
 
@@ -42,18 +46,13 @@ inputElement.addEventListener('input', debounce((event) => {
     })
     .then((response) => {
       if(Array.isArray(response)){
-        if(response.length === 0){
-          const divElement = document.createElement('div');
-          divElement.innerHTML = 'No results found';
-          locationsFieldset.appendChild(divElement);
-        }
-
         response.forEach(location => {
           const divElement = document.createElement('div');
           const labelElement = document.createElement('label');
           const radioElement = document.createElement('input');
 
           radioElement.setAttribute('type','radio');
+          radioElement.setAttribute('value',JSON.stringify(location));
           labelElement.appendChild(radioElement);
 
           const labelInnerText = `${location.name}, ${location.state ? location.state+', ' : ''} ${location.country}`;
@@ -61,10 +60,23 @@ inputElement.addEventListener('input', debounce((event) => {
 
           divElement.appendChild(labelElement);
           locationsFieldset.appendChild(divElement);
-        })
+        });
+
+        if(response.length === 0){
+          const divElement = document.createElement('div');
+          divElement.innerHTML = 'No results found';
+          locationsFieldset.appendChild(divElement);
+        }
+        else{
+          buttonElement.classList.remove('hidden');
+        }
 
         locationsFieldset.classList.remove('hidden');
       }
       return response;
     })
 }, 500))
+
+buttonElement.addEventListener('submit', (event) => {
+  console.log('VALUE',event.target.value);
+});
