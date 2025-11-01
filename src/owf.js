@@ -1,5 +1,6 @@
 const formElement = document.getElementById('owf-form-new');
 const inputElement = document.getElementById('owf-input-new-location');
+const locationsFieldset = document.getElementById('owf-input-locations');
 
 const OWM_GEO_ENDPOINT = 'https://api.openweathermap.org/geo/1.0/direct';
 
@@ -16,7 +17,18 @@ const debounce = (callback, wait) => {
   };
 }
 
+function resetLocationsFieldset(){
+  locationsFieldset.classList.add('hidden');
+  const existingChildren = locationsFieldset.getElementsByTagName('*');
+  for(const child of existingChildren){
+    if(child.tagName !== 'legend')
+      child.remove();
+  }
+}
+
 inputElement.addEventListener('input', debounce((event) => {
+  resetLocationsFieldset();
+
   browser.storage.local.get('key')
     .then(({key}) => {
       const searchStr = event.target.value;
@@ -29,8 +41,24 @@ inputElement.addEventListener('input', debounce((event) => {
       return response.json();
     })
     .then((response) => {
-      console.log('RESPONSE',JSON.stringify(response));
+      if(Array.isArray(response)){
+        response.forEach(location => {
+          const divElement = document.createElement('div');
+          const labelElement = document.createElement('label');
+          const radioElement = document.createElement('input');
+
+          radioElement.setAttribute('type','radio');
+          labelElement.appendChild(radioElement);
+
+          const labelInnerText = `${location.name}, ${location.state ? location.state+', ' : ''} ${location.country}`;
+          labelElement.innerHTML = labelElement.innerHTML + labelInnerText;
+
+          divElement.appendChild(labelElement);
+          locationsFieldset.appendChild(divElement);
+        })
+
+        locationsFieldset.classList.remove('hidden');
+      }
       return response;
     })
-
 }, 500))
