@@ -1,8 +1,11 @@
 const topbarElement = document.getElementById('owf-topbar');
+const addTabElement = document.getElementById('owf-add');
 const formElement = document.getElementById('owf-form-new');
 const inputElement = document.getElementById('owf-input-new-location');
 const locationsFieldset = document.getElementById('owf-input-locations');
 const buttonElement = document.getElementById('owf-btn-submit-location');
+const addLocationTab = document.getElementById('owf-tab-new');
+const forecastTab = document.getElementById('owf-tab-forecast');
 
 const OWM_GEO_ENDPOINT = 'https://api.openweathermap.org/geo/1.0/direct';
 
@@ -20,7 +23,26 @@ const debounce = (callback, wait) => {
 }
 
 function onClickTab(index){
-  console.log('Clicked index',index)
+  return browser.storage.local.get('locationTabs')
+    .then(({locationTabs}) => {
+      if(!locationTabs || !Array.isArray(locationTabs)){
+        return locationTabs;
+      }
+      const locationInfo = locationTabs[index];
+
+      // TEMP
+      addLocationTab.classList.add('hidden');
+      forecastTab.classList.remove('hidden');
+      forecastTab.innerHTML = `
+        ${locationInfo.name}<br/>
+        ${locationInfo.state ? locationInfo.state+"<br/>" : ''}
+        ${locationInfo.country}<br/>
+        LAT: ${locationInfo.lat}<br/>
+        LON: ${locationInfo.lon}
+      `;
+
+      return locationTabs;
+    });
 }
 
 function resetLocationsFieldset(){
@@ -69,6 +91,11 @@ function refreshLocationTabs(){
  * EVENT INITIALIZATION & FUNCTION CALLS
  */
 refreshLocationTabs();
+
+addTabElement.addEventListener('click', () => {
+  addLocationTab.classList.remove('hidden');
+  forecastTab.classList.add('hidden');
+});
 
 inputElement.addEventListener('input', debounce((event) => {
   resetLocationsFieldset();
