@@ -6,7 +6,7 @@ main{
   display: flex;
   flex-direction: column;
 
-  .owf-topbar{
+  div#owf-topbar{
     display: flex;
 
     button{

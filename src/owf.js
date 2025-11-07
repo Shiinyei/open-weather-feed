@@ -1,3 +1,4 @@
+const topbarElement = document.getElementById('owf-topbar');
 const formElement = document.getElementById('owf-form-new');
 const inputElement = document.getElementById('owf-input-new-location');
 const locationsFieldset = document.getElementById('owf-input-locations');
@@ -18,6 +19,10 @@ const debounce = (callback, wait) => {
   };
 }
 
+function onClickTab(index){
+  console.log('Clicked index',index)
+}
+
 function resetLocationsFieldset(){
   locationsFieldset.classList.add('hidden');
   buttonElement.classList.add('hidden');
@@ -29,13 +34,41 @@ function resetLocationsFieldset(){
   }
 }
 
+function resetLocationTabs(){
+  const existingChildren = topbarElement.getElementsByTagName('button');
+  for(const i in existingChildren){
+    if(i === "0"){
+      continue;
+    }
+    const element = existingChildren[i];
+    if(element instanceof HTMLButtonElement){
+      element.remove();
+    }
+  }
+}
+
 function refreshLocationTabs(){
   return browser.storage.local.get('locationTabs')
     .then(({locationTabs}) => {
-      console.log('REFRESHING LOCATION TABS...',locationTabs);
+      resetLocationTabs();
+      if(!locationTabs || !Array.isArray(locationTabs)){
+        return locationTabs;
+      }
+
+      locationTabs.forEach((location,index) => {
+        const buttonElement = document.createElement('button');
+        buttonElement.innerHTML = location.name;
+        buttonElement.addEventListener('click', () => onClickTab(index));
+        topbarElement.appendChild(buttonElement);
+      });
       return locationTabs;
     });
 }
+
+/**
+ * EVENT INITIALIZATION & FUNCTION CALLS
+ */
+refreshLocationTabs();
 
 inputElement.addEventListener('input', debounce((event) => {
   resetLocationsFieldset();
@@ -86,7 +119,6 @@ inputElement.addEventListener('input', debounce((event) => {
 }, 500))
 
 formElement.addEventListener('submit', (event) => {
-  event.preventDefault();
   const data = new FormData(formElement);
   const chosenLocation = JSON.parse(data.get('chosenLocation'));
 
