@@ -24,10 +24,17 @@ function resetLocationsFieldset(){
   const existingChildren = locationsFieldset.getElementsByTagName('*');
   for(const child of existingChildren){
     if(child.tagName.toLowerCase() !== 'legend'){
-      console.log('CHILD',child.tagName);
       child.remove();
     }
   }
+}
+
+function refreshLocationTabs(){
+  return browser.storage.local.get('locationTabs')
+    .then(({locationTabs}) => {
+      console.log('REFRESHING LOCATION TABS...',locationTabs);
+      return locationTabs;
+    });
 }
 
 inputElement.addEventListener('input', debounce((event) => {
@@ -52,6 +59,7 @@ inputElement.addEventListener('input', debounce((event) => {
           const radioElement = document.createElement('input');
 
           radioElement.setAttribute('type','radio');
+          radioElement.setAttribute('name','chosenLocation');
           radioElement.setAttribute('value',JSON.stringify(location));
           labelElement.appendChild(radioElement);
 
@@ -77,6 +85,24 @@ inputElement.addEventListener('input', debounce((event) => {
     })
 }, 500))
 
-buttonElement.addEventListener('submit', (event) => {
-  console.log('VALUE',event.target.value);
+formElement.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const data = new FormData(formElement);
+  const chosenLocation = JSON.parse(data.get('chosenLocation'));
+
+  return browser.storage.local.get('locationTabs')
+    .then(({locationTabs}) => {
+      // No locations registered yet
+      if(typeof locationTabs === 'undefined'){
+        return browser.storage.local.set({locationTabs: [chosenLocation]});
+      }
+      // Add location to existing ones
+      else{
+        const newLocationTabs = locationTabs.concat([chosenLocation]);
+        return browser.storage.local.set({locationTabs: newLocationTabs});
+      }
+    })
+    .then((value) => {
+      refreshLocationTabs();
+    })
 });
