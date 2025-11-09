@@ -8,6 +8,7 @@ const addLocationTab = document.getElementById('owf-tab-new');
 const forecastTab = document.getElementById('owf-tab-forecast');
 
 const OWM_GEO_ENDPOINT = 'https://api.openweathermap.org/geo/1.0/direct';
+const OWM_FORECAST_ENDPOINT = 'https://api.openweathermap.org/data/2.5/forecast';
 
 /**
  * [Source](https://stackoverflow.com/a/75988895)
@@ -23,25 +24,26 @@ const debounce = (callback, wait) => {
 }
 
 function onClickTab(index){
-  return browser.storage.local.get('locationTabs')
-    .then(({locationTabs}) => {
+  return browser.storage.local.get(['locationTabs','key'])
+    .then(({locationTabs, key}) => {
       if(!locationTabs || !Array.isArray(locationTabs)){
         return locationTabs;
       }
       const locationInfo = locationTabs[index];
+      const apiKey = atob(key);
 
-      // TEMP
       addLocationTab.classList.add('hidden');
       forecastTab.classList.remove('hidden');
-      forecastTab.innerHTML = `
-        ${locationInfo.name}<br/>
-        ${locationInfo.state ? locationInfo.state+"<br/>" : ''}
-        ${locationInfo.country}<br/>
-        LAT: ${locationInfo.lat}<br/>
-        LON: ${locationInfo.lon}
-      `;
 
-      return locationTabs;
+      return fetch(
+        `${OWM_FORECAST_ENDPOINT}?appid=${apiKey}&lat=${locationInfo.lat}&lon=${locationInfo.lon}&units=metric`
+      );
+    })
+    .then(response => {
+      return response.json();
+    })
+    .then(data => {
+      console.log('RESPONSE DATA',data);
     });
 }
 
